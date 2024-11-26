@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: root
+      DB_DATABASE: medical_test
+    ports:
+      - "8000:8000"
+    links:
+      - db
+    volumes:
+      - .:/usr/src/app
+  db:
+    image: postgres:latest
+    container_name: database_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: medical_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
